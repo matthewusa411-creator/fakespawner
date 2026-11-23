@@ -98,8 +98,8 @@ public class SpawnerScreen extends ContainerScreen {
     // ---- behaviour -----------------------------------------------------------------------------
 
     @Override
-    public void tick() {
-        super.tick();
+    protected void containerTick() {
+        super.containerTick();
         refresh();
     }
 

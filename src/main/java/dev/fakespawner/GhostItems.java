@@ -45,7 +45,7 @@ public final class GhostItems {
     public static boolean isGhost(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return false;
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-        return data != null && data.contains(TAG);
+        return data != null && data.copyTag().contains(TAG);
     }
 
     public static void spawn(ItemStack stack, double x, double y, double z, Vec3 motion) {
