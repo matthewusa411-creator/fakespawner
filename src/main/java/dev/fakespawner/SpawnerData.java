@@ -1,13 +1,16 @@
 package dev.fakespawner;
 
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/** Fake state of one spawner stack: how many are stacked and how much fake loot has piled up. */
+/** Fake state of one spawner stack: how many are stacked, how much fake loot has piled up, its skeleton. */
 public final class SpawnerData {
     public static final int PAGE_SLOTS = 45;           // top 5 rows of the 6-row chest
     public static final long CAP = PAGE_SLOTS * 64L;   // combined bones + arrows
@@ -18,11 +21,12 @@ public final class SpawnerData {
 
     private double carry;
     private long last = System.currentTimeMillis();
+    private FakeSkeleton skeleton;
 
-    /** One bone and one arrow per spawner every 2 seconds. */
+    /** One bone and one arrow per spawner every FakeConfig.lootSeconds seconds. */
     public void update() {
         long now = System.currentTimeMillis();
-        double add = (now - last) / 2000.0 * stack + carry;
+        double add = (now - last) / 1000.0 / FakeConfig.lootSeconds * stack + carry;
         last = now;
         long whole = (long) add;
         carry = add - whole;
@@ -35,6 +39,37 @@ public final class SpawnerData {
     public int percent() {
         return (int) Math.min(100, (bones + arrows) * 100 / CAP);
     }
+
+    // ---- skeleton in the cage ------------------------------------------------------------------
+
+    public void tickSkeleton(Level level, BlockPos pos) {
+        if (!(level instanceof ClientLevel clientLevel)) return;
+        if (skeleton == null || skeleton.isRemoved()) {
+            skeleton = new FakeSkeleton(level);
+            skeleton.setPos(pos.getX() + 0.5, pos.getY() + 0.1, pos.getZ() + 0.5);
+            skeleton.setOldPosAndRot();
+            clientLevel.addEntity(skeleton);
+        }
+        // Spin slowly and keep it on fire, like the mob inside a real spawner.
+        float prev = skeleton.getYRot();
+        float next = prev + 3.0F;
+        skeleton.yRotO = prev;
+        skeleton.setYRot(next);
+        skeleton.yBodyRotO = skeleton.yBodyRot;
+        skeleton.yBodyRot = next;
+        skeleton.yHeadRotO = skeleton.yHeadRot;
+        skeleton.yHeadRot = next;
+        skeleton.setSharedFlagOnFire(true);
+    }
+
+    public void removeSkeleton() {
+        if (skeleton != null) {
+            skeleton.discard();
+            skeleton = null;
+        }
+    }
+
+    // ---- loot ----------------------------------------------------------------------------------
 
     private static ItemStack make(Item item, int count, boolean ghost) {
         return ghost ? GhostItems.make(item, count) : new ItemStack(item, count);

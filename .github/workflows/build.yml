@@ -23,13 +23,18 @@ jobs:
       - name: Inspect mixin targets (debug)
         continue-on-error: true
         run: |
-          for j in $(find ~/.gradle -name '*.jar' -size +5M 2>/dev/null); do
-            if unzip -l "$j" 2>/dev/null | grep -q 'net/minecraft/client/player/LocalPlayer.class'; then
-              echo "== $j"
-              javap -p -cp "$j" net.minecraft.client.player.LocalPlayer | grep -E " drop\(" || true
-              javap -p -cp "$j" 'net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase' | grep -E "getSoundType|canOcclude" || true
-            fi
-          done
+          J=$(find ~/.gradle/caches/fabric-loom -name 'minecraft-merged-*.jar' | head -1)
+          echo "JAR $J"
+          dump() { echo "== $1"; javap -p -cp "$J" "$1" | grep -E "$2" || echo "(none)"; }
+          dump 'net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase' 'getSoundType|canOcclude|getFaceOcclusionShape|isSolidRender'
+          dump net.minecraft.world.entity.LivingEntity 'canGlide'
+          dump net.minecraft.world.entity.player.Player 'tryToStartFallFlying'
+          dump net.minecraft.client.player.LocalPlayer ' drop\\('
+          dump net.minecraft.client.multiplayer.ClientCommonPacketListenerImpl ' send\\('
+          dump net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket 'getAction|START_FALL_FLYING'
+          dump net.minecraft.world.item.ItemStack 'getHoverName'
+          dump net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer 'render|Armor'
+          dump net.minecraft.client.renderer.entity.layers.WingsLayer 'render|Wings|submit'
       - uses: actions/upload-artifact@v4
         with:
           name: fakespawner-jar
