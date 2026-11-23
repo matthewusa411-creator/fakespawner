@@ -12,7 +12,7 @@ Makes blast furnaces act like skeleton spawners on your client:
 
 ## Build
 
-Needs JDK 21 and Gradle 8.14+ with internet access.
+Needs JDK 21 and Gradle 9.2+ with internet access.
 
     gradle build
 
