@@ -9,13 +9,20 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/** Blast furnaces use the Mob Spawner's place / break / step / hit sounds. */
+/** Moss blocks use the Mob Spawner sounds and stop hiding neighbouring faces, like a real spawner. */
 @Mixin(BlockBehaviour.BlockStateBase.class)
 public abstract class BlockStateBaseMixin {
     @Inject(method = "getSoundType", at = @At("HEAD"), cancellable = true)
     private void fakespawner$spawnerSounds(CallbackInfoReturnable<SoundType> cir) {
-        if (((BlockState) (Object) this).is(Blocks.BLAST_FURNACE)) {
+        if (((BlockState) (Object) this).is(Blocks.MOSS_BLOCK)) {
             cir.setReturnValue(SoundType.SPAWNER);
+        }
+    }
+
+    @Inject(method = "canOcclude", at = @At("HEAD"), cancellable = true)
+    private void fakespawner$noOcclude(CallbackInfoReturnable<Boolean> cir) {
+        if (((BlockState) (Object) this).is(Blocks.MOSS_BLOCK)) {
+            cir.setReturnValue(false);
         }
     }
 }

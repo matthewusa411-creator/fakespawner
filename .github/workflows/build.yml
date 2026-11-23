@@ -20,6 +20,16 @@ jobs:
           gradle-version: 9.2.0
       - name: Build
         run: gradle build --no-daemon
+      - name: Inspect mixin targets (debug)
+        continue-on-error: true
+        run: |
+          for j in $(find ~/.gradle -name '*.jar' -size +5M 2>/dev/null); do
+            if unzip -l "$j" 2>/dev/null | grep -q 'net/minecraft/client/player/LocalPlayer.class'; then
+              echo "== $j"
+              javap -p -cp "$j" net.minecraft.client.player.LocalPlayer | grep -E " drop\(" || true
+              javap -p -cp "$j" 'net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase' | grep -E "getSoundType|canOcclude" || true
+            fi
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: fakespawner-jar
