@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "fakespawner",
+  "version": "${version}",
+  "name": "Fake Spawner",
+  "description": "Client-side only: blast furnaces behave like skeleton spawners (screen, stacking, sounds, particles).",
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.fakespawner.FakeSpawnerClient"]
+  },
+  "mixins": ["fakespawner.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
